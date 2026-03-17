@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>App PRO</title>
+
+<style>
+body{
+font-family:Arial;
+background: linear-gradient(135deg,#1e1e2f,#3a3a5f);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+color:white;
+}
+
+.fade{animation:fadeIn 0.8s;}
+@keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+
+.container{
+background:#222;
+padding:30px;
+border-radius:15px;
+text-align:center;
+box-shadow:0 0 30px rgba(0,0,0,0.5);
+}
+
+input{
+padding:10px;
+margin:8px;
+width:200px;
+border-radius:5px;
+border:none;
+}
+
+button{
+padding:10px;
+margin:5px;
+border:none;
+border-radius:8px;
+background:#444;
+color:white;
+cursor:pointer;
+}
+
+button:hover{background:#666;}
+
+#pantalla{
+width:100%;
+height:50px;
+font-size:20px;
+text-align:right;
+background:#111;
+color:#0f0;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+#historial{
+max-height:120px;
+overflow:auto;
+background:#111;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.hidden{display:none;}
+</style>
+
+</head>
+
+<body>
+
+<div class="container fade" id="login">
+<h2>🔐 Login / Registro</h2>
+
+<input id="user" placeholder="Usuario"><br>
+<input id="pass" type="password" placeholder="Contraseña"><br>
+
+<button onclick="login()">Entrar</button>
+<button onclick="registrar()">Registrar</button>
+
+<p id="mensaje"></p>
+</div>
+
+<div class="container hidden fade" id="app">
+
+<h2>🧮 Calculadora PRO</h2>
+
+<input id="pantalla" readonly><br>
+
+<button onclick="agregar('7')">7</button>
+<button onclick="agregar('8')">8</button>
+<button onclick="agregar('9')">9</button>
+<button onclick="agregar('/')">/</button><br>
+
+<button onclick="agregar('4')">4</button>
+<button onclick="agregar('5')">5</button>
+<button onclick="agregar('6')">6</button>
+<button onclick="agregar('*')">*</button><br>
+
+<button onclick="agregar('1')">1</button>
+<button onclick="agregar('2')">2</button>
+<button onclick="agregar('3')">3</button>
+<button onclick="agregar('-')">-</button><br>
+
+<button onclick="agregar('0')">0</button>
+<button onclick="agregar('.')">.</button>
+<button onclick="calcular()">=</button>
+<button onclick="agregar('+')">+</button><br>
+
+<button onclick="borrar()">C</button>
+<button onclick="raiz()">√</button>
+<button onclick="potencia()">x²</button>
+<button onclick="log()">log</button><br>
+
+<button onclick="sen()">sin</button>
+<button onclick="cos()">cos</button>
+<button onclick="tan()">tan</button>
+
+<h3>Historial</h3>
+<div id="historial"></div>
+
+<button onclick="logout()">Cerrar sesión</button>
+
+</div>
+
+<div class="container hidden fade" id="admin">
+<h2>👑 ADMIN</h2>
+<div id="usuarios"></div>
+<button onclick="cerrarAdmin()">Volver</button>
+</div>
+
+<script>
+
+// REGISTRO
+function registrar(){
+let u = user.value
+let p = pass.value
+
+if(!u || !p) return alert("Completa todo")
+
+let users = JSON.parse(localStorage.getItem("users")) || []
+users.push({user:u, pass:p})
+
+localStorage.setItem("users", JSON.stringify(users))
+mensaje.innerText="Registrado!"
+}
+
+// LOGIN
+function login(){
+let u = user.value
+let p = pass.value
+
+let users = JSON.parse(localStorage.getItem("users")) || []
+
+let valido = users.find(x=>x.user==u && x.pass==p)
+
+if(valido){
+loginDiv.style.display="none"
+app.style.display="block"
+}else{
+mensaje.innerText="Datos incorrectos"
+}
+}
+
+// LOGOUT
+function logout(){
+app.style.display="none"
+loginDiv.style.display="block"
+}
+
+// ADMIN (tecla A)
+document.addEventListener("keydown", function(e){
+if(e.key.toLowerCase()=="a"){
+app.style.display="none"
+admin.style.display="block"
+
+let users = JSON.parse(localStorage.getItem("users")) || []
+let html=""
+
+users.forEach(u=>{
+html += u.user+" / "+u.pass+"<br>"
+})
+
+usuarios.innerHTML = html
+}
+})
+
+function cerrarAdmin(){
+admin.style.display="none"
+app.style.display="block"
+}
+
+// CALCULADORA
+function agregar(v){pantalla.value += v}
+
+function calcular(){
+let op = pantalla.value
+let res = eval(op)
+pantalla.value = res
+historial.innerHTML += op+"="+res+"<br>"
+guardar()
+}
+
+function borrar(){pantalla.value=""}
+
+function raiz(){
+let r=Math.sqrt(pantalla.value)
+pantalla.value=r
+historial.innerHTML+="√="+r+"<br>"
+guardar()
+}
+
+function potencia(){
+let r=Math.pow(pantalla.value,2)
+pantalla.value=r
+historial.innerHTML+="²="+r+"<br>"
+guardar()
+}
+
+function log(){
+let r=Math.log10(pantalla.value)
+pantalla.value=r
+historial.innerHTML+="log="+r+"<br>"
+guardar()
+}
+
+function sen(){
+let r=Math.sin(pantalla.value)
+pantalla.value=r
+historial.innerHTML+="sin="+r+"<br>"
+guardar()
+}
+
+function cos(){
+let r=Math.cos(pantalla.value)
+pantalla.value=r
+historial.innerHTML+="cos="+r+"<br>"
+guardar()
+}
+
+function tan(){
+let r=Math.tan(pantalla.value)
+pantalla.value=r
+historial.innerHTML+="tan="+r+"<br>"
+guardar()
+}
+
+// GUARDAR
+function guardar(){
+localStorage.setItem("historial", historial.innerHTML)
+}
+
+// CARGAR
+window.onload = function(){
+let h = localStorage.getItem("historial")
+if(h) historial.innerHTML = h
+}
+
+// FIX IDs
+const loginDiv = document.getElementById("login")
+</script>
+
+</body>
+</html>
